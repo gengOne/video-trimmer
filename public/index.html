@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频裁剪工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            padding: 40px;
+        }
+
+        .step {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px dashed #e0e0e0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .step:hover {
+            border-color: #4CAF50;
+            background-color: #f9f9f9;
+        }
+
+        .step-title {
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .step-number {
+            background: #4CAF50;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        input[type="file"]:hover {
+            border-color: #4CAF50;
+            background-color: #e8f5e8;
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .time-group {
+            flex: 1;
+        }
+
+        .time-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .progress {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            width: 0%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #e8f5e8;
+            border-radius: 8px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        .error {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #ffebee;
+            border-radius: 8px;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+        .download-btn {
+            background: linear-gradient(45deg, #2196F3, #1976D2);
+            margin-top: 15px;
+        }
+
+        .download-btn:hover {
+            box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+        }
+
+        .file-info {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background: #f0f7ff;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+        }
+
+        .video-preview {
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        video {
+            max-width: 100%;
+            max-height: 300px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 视频裁剪工具</h1>
+            <p>轻松裁剪视频，保留您需要的精彩片段</p>
+        </div>
+        
+        <div class="main-content">
+            <!-- 步骤1: 选择视频文件 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">1</span>
+                    选择视频文件
+                </div>
+                <input type="file" id="videoFile" accept="video/*" />
+                <div class="file-info" id="fileInfo">
+                    <strong>已选择文件：</strong><span id="fileName"></span>
+                </div>
+            </div>
+
+            <!-- 步骤2: 设置时间段 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">2</span>
+                    设置时间段（秒）
+                </div>
+                <div class="time-inputs">
+                    <div class="time-group">
+                        <label for="startTime">开始时间</label>
+                        <input type="number" id="startTime" min="0" step="0.1" placeholder="0" value="0" />
+                    </div>
+                    <div class="time-group">
+                        <label for="endTime">结束时间</label>
+                        <input type="number" id="endTime" min="0" step="0.1" placeholder="10" />
+                    </div>
+                </div>
+            </div>
+
+            <!-- 步骤3: 开始处理 -->
+            <div class="step">
+                <div class="step-title">
+                    <span class="step-number">3</span>
+                    开始裁剪
+                </div>
+                <button class="btn" id="trimBtn" disabled>开始裁剪视频</button>
+                
+                <div class="progress" id="progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p>正在处理视频，请稍候...</p>
+                </div>
+                
+                <div class="result" id="result">
+                    <h3>✅ 裁剪完成！</h3>
+                    <p>您的视频已成功裁剪，点击下方按钮下载。</p>
+                    <button class="btn download-btn" id="downloadBtn">下载裁剪后的视频</button>
+                </div>
+                
+                <div class="error" id="error">
+                    <h3>❌ 处理失败</h3>
+                    <p id="errorMessage">请检查文件格式和参数设置。</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFilename = null;
+        let downloadUrl = null;
+
+        const videoFileInput = document.getElementById('videoFile');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const startTimeInput = document.getElementById('startTime');
+        const endTimeInput = document.getElementById('endTime');
+        const trimBtn = document.getElementById('trimBtn');
+        const progress = document.getElementById('progress');
+        const result = document.getElementById('result');
+        const error = document.getElementById('error');
+        const errorMessage = document.getElementById('errorMessage');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        // 文件选择处理
+        videoFileInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            // 显示文件信息
+            fileName.textContent = file.name;
+            fileInfo.style.display = 'block';
+
+            // 上传文件
+            const formData = new FormData();
+            formData.append('video', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (data.success) {
+                    uploadedFilename = data.filename;
+                    trimBtn.disabled = false;
+                    hideMessages();
+                } else {
+                    showError(data.error || '文件上传失败');
+                }
+            } catch (err) {
+                showError('文件上传失败: ' + err.message);
+            }
+        });
+
+        // 裁剪按钮处理
+        trimBtn.addEventListener('click', async function() {
+            const startTime = parseFloat(startTimeInput.value) || 0;
+            const endTime = parseFloat(endTimeInput.value);
+
+            if (!uploadedFilename) {
+                showError('请先选择视频文件');
+                return;
+            }
+
+            if (!endTime || endTime <= startTime) {
+                showError('请设置有效的结束时间（必须大于开始时间）');
+                return;
+            }
+
+            hideMessages();
+            showProgress();
+            trimBtn.disabled = true;
+
+            try {
+                const response = await fetch('/trim', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        filename: uploadedFilename,
+                        startTime: startTime,
+                        endTime: endTime
+                    })
+                });
+
+                const data = await response.json();
+                
+                hideProgress();
+                
+                if (data.success) {
+                    downloadUrl = data.downloadUrl;
+                    showResult();
+                } else {
+                    showError(data.error || '视频处理失败');
+                }
+            } catch (err) {
+                hideProgress();
+                showError('处理失败: ' + err.message);
+            }
+
+            trimBtn.disabled = false;
+        });
+
+        // 下载按钮处理
+        downloadBtn.addEventListener('click', function() {
+            if (downloadUrl) {
+                window.location.href = downloadUrl;
+            }
+        });
+
+        function showProgress() {
+            progress.style.display = 'block';
+        }
+
+        function hideProgress() {
+            progress.style.display = 'none';
+        }
+
+        function showResult() {
+            result.style.display = 'block';
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            error.style.display = 'block';
+        }
+
+        function hideMessages() {
+            result.style.display = 'none';
+            error.style.display = 'none';
+        }
+
+        // 时间输入验证
+        endTimeInput.addEventListener('input', function() {
+            const startTime = parseFloat(startTimeInput.value) || 0;
+            const endTime = parseFloat(this.value);
+            
+            if (endTime && endTime <= startTime) {
+                this.style.borderColor = '#f44336';
+            } else {
+                this.style.borderColor = '#ddd';
+            }
+        });
+    </script>
+</body>
+</html>
