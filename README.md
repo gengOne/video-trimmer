@@ -130,7 +130,7 @@ sudo apt install ffmpeg
 ```
 
 ### 2. Node.js
-需要Node.js 16或更高版本
+需要Node.js 18
 
 ## 快速开始
 
@@ -147,7 +147,7 @@ npm install
 npm start
 ```
 
-4. 浏览器会自动打开 http://localhost:3000
+4. 浏览器会自动打开 http://localhost:9090
 
 ### 打包成exe
 
@@ -182,7 +182,7 @@ npm run build-all
 - 确保FFmpeg已正确安装并添加到系统PATH
 - 支持的最大文件大小为500MB
 - 临时文件会在1小时后自动清理
-- 程序运行时会占用3000端口
+- 程序运行时会占用9090端口
 
 ## 文件结构
 
